@@ -136,6 +136,7 @@ public class ScreenPermissionsFrame extends AbstractFrame {
         screenPermissionsTreeDs.addItemPropertyChangeListener(e -> {
             if ("permissionVariant".equals(e.getProperty())) {
                 updateCheckBoxes(e.getItem());
+                updateNodes(e.getItem());
             }
         });
 
@@ -181,7 +182,8 @@ public class ScreenPermissionsFrame extends AbstractFrame {
     protected void updateCheckBoxes(BasicPermissionTarget item) {
         itemChanging = true;
         if (item != null) {
-            boolean visible = !item.getId().startsWith("root:");
+            boolean visible = !item.getId().startsWith("root:")
+                    && !item.getId().startsWith("category:all:");
 
             allowCheckBox.setVisible(visible);
             disallowCheckBox.setVisible(visible && (rolesPolicyVersion == 1));
@@ -203,14 +205,24 @@ public class ScreenPermissionsFrame extends AbstractFrame {
         itemChanging = false;
     }
 
+    protected void updateNodes(BasicPermissionTarget target) {
+        if (target != null && target.getId().startsWith("item:")) {
+            screenPermissionsTreeDs.getItems().stream()
+                    .filter(permissionTarget ->
+                            !Objects.equals(target, permissionTarget)
+                                    && Objects.equals(target.getPermissionValue(), permissionTarget.getPermissionValue()))
+                    .findFirst()
+                    .ifPresent(permissionTarget -> permissionTarget.setPermissionVariant(target.getPermissionVariant()));
+        }
+    }
+
     public void loadPermissions() {
         screenPermissionsDs.refresh(getParamsForDatasource());
 
         screenPermissionsTreeDs.setPermissionDs(screenPermissionsDs);
         screenPermissionsTreeDs.refresh();
 
-        screenPermissionsTree.expandAll();
-        screenPermissionsTree.collapse("root:others");
+        screenPermissionsTree.collapseAll();
 
         initScreenWildcardCheckBox();
         screenWildcardCheckBox.setEditable(!roleDs.getItem().isPredefined());
