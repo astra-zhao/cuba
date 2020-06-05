@@ -34,6 +34,7 @@ import com.haulmont.cuba.security.entity.PermissionType;
 import com.haulmont.cuba.security.entity.Role;
 import com.haulmont.cuba.security.role.RolesService;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -263,6 +264,12 @@ public class ScreenPermissionsFrame extends AbstractFrame {
 
     public void applyFilter() {
         screenPermissionsTreeDs.refresh(ParamsMap.of("filtering", true));
+
+        if (StringUtils.isEmpty(screenFilter.getValue())) {
+            screenPermissionsTree.collapseAll();
+        } else {
+            screenPermissionsTree.expandAll();
+        }
     }
 
     protected Map<String, Object> getParamsForDatasource() {
